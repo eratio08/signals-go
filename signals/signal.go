@@ -8,21 +8,21 @@ import (
 
 var context []*Effect
 
-type Signal struct {
+type Signal[E any] struct {
 	subscriptions set.Set[*Effect]
-	value         any
+	value         E
 }
 
-func (s *Signal) subscribe(running *Effect) {
+func (s *Signal[E]) subscribe(running *Effect) {
 	s.subscriptions.Add(running)
 	running.dependencies.Add(&s.subscriptions)
 }
 
-func (s *Signal) String() string {
-	return fmt.Sprintf("Signal{subscriptions: %v, value: %q}", s.subscriptions, s.value)
+func (s *Signal[E]) String() string {
+	return fmt.Sprintf("Signal{subscriptions: %v, value: %v}", s.subscriptions, s.value)
 }
 
-func (s *Signal) Read() any {
+func (s *Signal[E]) Read() E {
 	if len(context) > 0 {
 		running := context[len(context)-1]
 		s.subscribe(running)
@@ -31,7 +31,7 @@ func (s *Signal) Read() any {
 	return s.value
 }
 
-func (s *Signal) Write(nextValue any) {
+func (s *Signal[E]) Write(nextValue E) {
 	s.value = nextValue
 
 	for _, sub := range s.subscriptions.ToSlice() {
@@ -39,8 +39,8 @@ func (s *Signal) Write(nextValue any) {
 	}
 }
 
-func CreateSignal(value any) *Signal {
-	return &Signal{
+func CreateSignal[E any](value E) *Signal[E] {
+	return &Signal[E]{
 		subscriptions: set.New[*Effect](),
 		value:         value,
 	}

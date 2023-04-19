@@ -9,7 +9,7 @@ import (
 func main() {
 	signal := signals.CreateSignal(3)
 	signal.Write(5)
-	signal.Write(signal.Read().(int) * 2)
+	signal.Write(signal.Read() * 2)
 
 	fmt.Println()
 
@@ -36,13 +36,13 @@ func main() {
 	lastName := signals.CreateSignal("Smith")
 	showFullName := signals.CreateSignal(true)
 
-	displayName := signals.CreateMemento(func() (any, error) {
-		if !showFullName.Read().(bool) {
+	displayName := signals.CreateMemento(func() (string, error) {
+		if !showFullName.Read() {
 			return firstName.Read(), nil
 		}
 
-		return firstName.Read().(string) + " " + lastName.Read().(string), nil
-	})
+		return firstName.Read() + " " + lastName.Read(), nil
+  }, "")
 
 	signals.CreateEffect(func() error {
 		fmt.Println("My name is", displayName.Read())
